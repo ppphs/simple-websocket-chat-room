@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="./common/css/reset.css">
+  <link rel="stylesheet" href="./common/sass/style.css">
+  <title>websocket聊天</title>
+  <script src="./socket.io.js"></script>
+</head>
+<body>
+  <header>
+    <h1>聊天室</h1>
+    <p class="personNumError">对不起人两人间聊天室人数满了，您发送的消息将无效！sorry~~</p>
+  </header>
+  <section>
+    <div id="messageContainer" class="message"></div>
+    <textarea id="input"></textarea><!--
+    --><span id="send">发送</span>
+    <span id="status" class=""><span class="circle"></span>在线</span>
+    <span id="fixedMsg" class="">欢迎进入聊天室</span>
+  </section>
+  <script>
+    let btn = document.querySelector('#send'),
+      textarea = document.querySelector('#input'),
+      status = document.querySelector('#status'),
+      fixedMsg = document.querySelector('#fixedMsg'),
+      messageContainer = document.querySelector('#messageContainer')
+    let socket = io('ws://localhost:8080/#/')
+    let nickname = null
+    socket.on('enter', function (id) {
+      if (nickname === null) {
+        nickname = id
+      }
+      status.style.display = 'block'
+      fixedMsg.className = 'enter'
+      setTimeout(function () {
+        fixedMsg.className = ''
+      }, 900)
+    })
+    socket.on('message', function (dataObj) {
+      if (nickname === dataObj.nickname) {
+        return
+      }
+      console.log(dataObj)
+      let span = document.createElement('span')
+      span.textContent = dataObj.message
+      span.className = 'leftMsg'
+      messageContainer.appendChild(span)
+    })
+    btn.onclick = function () {
+      let text = textarea.value
+      if (text) {
+        socket.emit('message', text)
+      }
+      let span = document.createElement('span')
+      span.textContent = text
+      span.className = 'rightMsg'
+      messageContainer.appendChild(span)
+    }
+  </script>
+</body>
+</html>
