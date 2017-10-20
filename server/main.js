@@ -6,23 +6,44 @@ app.listen(PORT)
 
 var userId = 0
 
+function getDate () {
+  let date = new Date(),
+    year = date.getFullYear(),
+    month = date.getMonth() + 1,
+    day = date.getDate(),
+    hours = formatDate(date.getHours()),
+    minutes = formatDate(date.getMinutes()),
+    seconds = formatDate(date.getSeconds())
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+}
+
+function formatDate (num) {
+  return ('00' + num).slice(-2)
+}
+
 io.on('connection', function (socket) {
-  userId++
-  if (userId > 2) {
-    userId = 1
-    return socket.emit('personNumError', '满员')
+  if (userId >= 2) {
+    return socket.emit('personNumError')
   }
+  
+  userId++
   socket.nickname = 'user' + userId
+  socket.userId = userId
   io.emit('enter', socket.nickname)
   socket.on('message', function (data) {
-    let dataObj = {message: data, nickname: socket.nickname}
-    io.emit('message', `${socket.nickname}说：${dataObj}`)
+    let dataObj = {message: data, nickname: socket.nickname, date: getDate()}
+    io.emit('message', dataObj)
   })
   socket.on('disconnect', function () {
     io.emit('leave', socket.nickname + '走了')
   })
   socket.on('disconnect', function () {
-    userId--
+    if (socket.userId === 1) {
+      userId = 0
+    } else {
+      userId = 1
+    }
   })
 })
 
