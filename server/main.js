@@ -36,9 +36,6 @@ io.on('connection', function (socket) {
     io.emit('message', dataObj)
   })
   socket.on('disconnect', function () {
-    io.emit('leave', socket.nickname + '走了')
-  })
-  socket.on('disconnect', function () {
     if (socket.userId === 1) {
       userId = 0
     } else {
